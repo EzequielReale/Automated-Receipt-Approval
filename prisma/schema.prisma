@@ -1,0 +1,39 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  EMPLOYEE
+  REVIEWER
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  password_hash String
+  name          String
+  role          Role
+  tickets       Ticket[]
+}
+
+model Ticket {
+  id               String   @id @default(uuid())
+  merchant_name    String
+  date             String
+  amount           Float
+  category         String
+  ai_status        String
+  ai_reasoning     String
+  final_status     String?
+  reviewer_comment String?
+  imageBase64      String   @db.Text
+  createdAt        DateTime @default(now())
+  
+  user             User     @relation(fields: [userId], references: [id])
+  userId           String
+}

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { mockDb } from '../../../../lib/mockDb';
+import { prisma } from '../../../../lib/prisma';
 import { jwtVerify } from 'jose';
 
 const getSecret = () => new TextEncoder().encode(process.env.JWT_SECRET || 'super-secret-key-for-demo');
@@ -20,14 +20,22 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const { id: ticketId } = await params;
     const body = await request.json();
     
-    mockDb.updateTicket(ticketId, {
-      data: body.data,
-      finalStatus: body.finalStatus,
-      comment: body.comment
+    await prisma.ticket.update({
+      where: { id: ticketId },
+      data: {
+        final_status: body.finalStatus,
+        reviewer_comment: body.comment,
+        // Update data fields if reviewer can modify them
+        merchant_name: body.data?.merchant_name,
+        date: body.data?.receipt_date,
+        amount: body.data?.total_amount ? Number(body.data.total_amount) : undefined,
+        category: body.data?.category
+      }
     });
 
     return NextResponse.json({ success: true });
-  } catch {
+  } catch (error) {
+    console.error('Update ticket error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

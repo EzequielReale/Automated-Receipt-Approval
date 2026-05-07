@@ -1,9 +1,26 @@
 import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 import { ExtractedReceiptData } from '../../../lib/types';
 import { VALID_CATEGORIES } from '../../../lib/constants';
+import { prisma } from '../../../lib/prisma';
+import { evaluateReceipt } from '../../../lib/ruleEngine';
+import { jwtVerify } from 'jose';
 
-export async function POST(request: Request) {
+const getSecret = () => new TextEncoder().encode(process.env.JWT_SECRET || 'super-secret-key-for-demo');
+
+export async function POST(request: NextRequest) {
   try {
+    const token = request.cookies.get('auth_token')?.value;
+    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    let userId: string;
+    try {
+      const { payload } = await jwtVerify(token, getSecret());
+      userId = payload.sub as string;
+    } catch {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { imageBase64 } = await request.json();
 
     if (!imageBase64) {
@@ -20,7 +37,7 @@ export async function POST(request: Request) {
 
     const validCategoriesText = VALID_CATEGORIES.join(', ');
 
-    const payload = {
+    const payloadObj = {
       model: AZURE_DEPLOYMENT_NAME,
       input: [
         {
@@ -54,7 +71,7 @@ Return ONLY a valid JSON object with these exact keys.`
         'Content-Type': 'application/json',
         'api-key': AZURE_OPENAI_KEY
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payloadObj)
     });
 
     if (response.status === 429) {
@@ -77,9 +94,9 @@ Return ONLY a valid JSON object with these exact keys.`
       extractedText = result.choices[0].message.content;
     } else if (result?.output) {
       // Responses API: find the 'message' item (skip 'reasoning' items)
-      const messageItem = result.output.find((item: any) => item.type === 'message');
+      const messageItem = result.output.find((item: { type: string }) => item.type === 'message');
       if (messageItem?.content) {
-        const textPart = messageItem.content.find((p: any) => p.type === 'output_text');
+        const textPart = messageItem.content.find((p: { type: string; text: string }) => p.type === 'output_text');
         if (textPart) extractedText = textPart.text;
       }
     }
@@ -97,7 +114,25 @@ Return ONLY a valid JSON object with these exact keys.`
 
     console.log('parsedData ->', parsedData);
 
-    return NextResponse.json({ data: parsedData });
+    // Run Rule Engine
+    const evaluation = evaluateReceipt(parsedData);
+
+    // Save ticket atomically
+    const newTicket = await prisma.ticket.create({
+      data: {
+        userId,
+        merchant_name: parsedData.merchant_name || 'Unknown',
+        date: parsedData.receipt_date || new Date().toISOString(),
+        amount: Number(parsedData.total_amount) || 0,
+        category: parsedData.category || 'Unknown',
+        ai_status: evaluation.status,
+        ai_reasoning: evaluation.reason,
+        final_status: evaluation.status === 'Needs Review' ? null : evaluation.status,
+        imageBase64: imageBase64,
+      }
+    });
+
+    return NextResponse.json({ data: parsedData, ticket: newTicket });
   } catch (error: unknown) {
     console.error('Extraction error:', error);
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Internal server error' }, { status: 500 });

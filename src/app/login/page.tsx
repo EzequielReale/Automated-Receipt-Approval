@@ -6,15 +6,21 @@ import Link from 'next/link';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState('employee@demo.com');
+  const [password, setPassword] = useState('password123');
+  const [error, setError] = useState('');
 
-  const handleLogin = async (email: string) => {
-    setLoading(email);
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, password }),
       });
 
       if (res.ok) {
@@ -22,62 +28,74 @@ export default function LoginPage() {
         router.push(`/dashboard/${user.role.toLowerCase()}`);
         router.refresh(); // Refresh to apply new auth state
       } else {
-        alert('Login failed');
+        const data = await res.json();
+        setError(data.error || 'Login failed');
       }
     } catch (error) {
       console.error(error);
-      alert('Login error');
+      setError('An unexpected error occurred.');
     } finally {
-      setLoading(null);
+      setLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="max-w-md w-full bg-white p-8 border border-gray-200 rounded-xl shadow-lg">
-        <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">Login (Mock DB)</h2>
-        <p className="text-gray-600 mb-6 text-center text-sm">
-          Select a user to login. The system will issue a JWT and redirect you to the appropriate dashboard.
-        </p>
-
-        <div className="space-y-4">
-          <button
-            onClick={() => handleLogin('employee@demo.com')}
-            disabled={loading !== null}
-            className={`w-full flex justify-between items-center px-6 py-4 rounded-lg border-2 border-blue-500 text-blue-700 hover:bg-blue-50 transition-colors ${
-              loading === 'employee@demo.com' ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
-          >
-            <div className="text-left">
-              <p className="font-bold text-lg">Employee</p>
-              <p className="text-sm">employee@demo.com</p>
-            </div>
-            {loading === 'employee@demo.com' ? (
-              <span className="animate-spin h-5 w-5 border-2 border-blue-700 border-t-transparent rounded-full"></span>
-            ) : (
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-            )}
-          </button>
-
-          <button
-            onClick={() => handleLogin('reviewer@demo.com')}
-            disabled={loading !== null}
-            className={`w-full flex justify-between items-center px-6 py-4 rounded-lg border-2 border-purple-500 text-purple-700 hover:bg-purple-50 transition-colors ${
-              loading === 'reviewer@demo.com' ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
-          >
-            <div className="text-left">
-              <p className="font-bold text-lg">Reviewer</p>
-              <p className="text-sm">reviewer@demo.com</p>
-            </div>
-            {loading === 'reviewer@demo.com' ? (
-              <span className="animate-spin h-5 w-5 border-2 border-purple-700 border-t-transparent rounded-full"></span>
-            ) : (
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-            )}
-          </button>
-        </div>
+        <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">Login</h2>
         
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div>
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300 ${
+              loading ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+          >
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
+        </form>
+        
+        <div className="mt-6 text-sm text-gray-600 bg-gray-50 p-4 rounded-lg">
+          <p className="font-bold mb-2">Test Accounts:</p>
+          <ul className="space-y-1 list-disc list-inside">
+            <li>employee@demo.com / password123</li>
+            <li>reviewer@demo.com / password123</li>
+          </ul>
+        </div>
+
         <div className="mt-8 text-center">
           <Link href="/" className="text-sm text-gray-500 hover:underline">← Back to Home</Link>
         </div>

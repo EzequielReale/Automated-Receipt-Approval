@@ -1,19 +1,41 @@
 import { NextResponse } from 'next/server';
-import { mockDb } from '../../../../lib/mockDb';
+import { prisma } from '../../../../lib/prisma';
 import { createToken } from '../../../../lib/auth';
+import bcrypt from 'bcryptjs';
 
 export async function POST(request: Request) {
   try {
-    const { email } = await request.json();
+    const { email, password } = await request.json();
 
-    const user = mockDb.users.find((u) => u.email === email);
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    if (!email || !password) {
+      return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
     }
 
-    const token = await createToken(user);
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
 
-    const response = NextResponse.json({ success: true, user });
+    if (!user) {
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+
+    if (!isPasswordValid) {
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+    }
+
+    // Mapping prisma user to the expected shape for token creation
+    const tokenUser = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+    };
+
+    const token = await createToken(tokenUser);
+
+    const response = NextResponse.json({ success: true, user: tokenUser });
     
     // Set cookie
     response.cookies.set({
@@ -27,7 +49,8 @@ export async function POST(request: Request) {
     });
 
     return response;
-  } catch {
+  } catch (error) {
+    console.error('Login error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

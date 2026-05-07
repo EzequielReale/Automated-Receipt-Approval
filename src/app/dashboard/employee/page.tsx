@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import UploadComponent from '../../../components/UploadComponent';
 import { Ticket } from '../../../lib/types';
-import { evaluateReceipt } from '../../../lib/ruleEngine';
 
 export default function EmployeeDashboard() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -34,7 +33,7 @@ export default function EmployeeDashboard() {
     setSuccess(null);
 
     try {
-      // 1. Extract Data
+      // Extract Data and Save Ticket atomically
       const extractRes = await fetch('/api/extract', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -43,22 +42,6 @@ export default function EmployeeDashboard() {
 
       const extractJson = await extractRes.json();
       if (!extractRes.ok) throw new Error(extractJson.error || 'Extraction failed');
-
-      const data = extractJson.data;
-      const evaluation = evaluateReceipt(data);
-
-      // 2. Save Ticket
-      const saveRes = await fetch('/api/tickets', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          data,
-          evaluation,
-          imageBase64: base64
-        }),
-      });
-
-      if (!saveRes.ok) throw new Error('Failed to save ticket');
 
       setSuccess('Receipt successfully uploaded and processed!');
       fetchTickets(); // Refresh list
