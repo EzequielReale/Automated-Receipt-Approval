@@ -7,8 +7,8 @@ import Link from 'next/link';
 export default function LoginPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState('employee@demo.com');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -88,16 +88,10 @@ export default function LoginPage() {
           </button>
         </form>
         
-        <div className="mt-6 text-sm text-gray-600 bg-gray-50 p-4 rounded-lg">
-          <p className="font-bold mb-2">Test Accounts:</p>
-          <ul className="space-y-1 list-disc list-inside">
-            <li>employee@demo.com / password123</li>
-            <li>reviewer@demo.com / password123</li>
-          </ul>
-        </div>
-
-        <div className="mt-8 text-center">
-          <Link href="/" className="text-sm text-gray-500 hover:underline">← Back to Home</Link>
+        <div className="mt-8 text-center border-t border-gray-100 pt-6">
+          <Link href="/" className="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors inline-flex items-center gap-1">
+            <span>←</span> Back to Home
+          </Link>
         </div>
       </div>
     </div>
