@@ -1,64 +1,112 @@
-import Image from "next/image";
+'use client';
+
+import React, { useState } from 'react';
+import UploadComponent from '../components/UploadComponent';
+import ReviewerForm from '../components/ReviewerForm';
+import { ExtractedReceiptData, RuleEvaluationResult, ReceiptStatus } from '../lib/types';
+import { evaluateReceipt } from '../lib/ruleEngine';
 
 export default function Home() {
+  const [imageBase64, setImageBase64] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  const [extractedData, setExtractedData] = useState<ExtractedReceiptData | null>(null);
+  const [evaluation, setEvaluation] = useState<RuleEvaluationResult | null>(null);
+  const [isCompleted, setIsCompleted] = useState(false);
+
+  const handleImageSelected = async (base64: string) => {
+    setImageBase64(base64);
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch('/api/extract', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageBase64: base64 }),
+      });
+
+      const json = await res.json();
+
+      if (!res.ok) {
+        throw new Error(json.error || 'Failed to extract data');
+      }
+
+      const data = json.data as ExtractedReceiptData;
+      setExtractedData(data);
+      
+      // Run the rule engine locally
+      const evalResult = evaluateReceipt(data);
+      setEvaluation(evalResult);
+
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred during extraction');
+      setImageBase64(null); // Reset image on error
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleReviewSubmit = (finalData: ExtractedReceiptData, finalStatus: ReceiptStatus, comment: string) => {
+    console.log('Final Submission:', { finalData, finalStatus, comment });
+    setIsCompleted(true);
+  };
+
+  const handleReset = () => {
+    setImageBase64(null);
+    setExtractedData(null);
+    setEvaluation(null);
+    setIsCompleted(false);
+    setError(null);
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div className="min-h-screen bg-gray-100 flex flex-col py-10 px-4">
+      <header className="mb-10 text-center">
+        <h1 className="text-4xl font-bold text-gray-900 mb-2">Auto Receipt Approval</h1>
+        <p className="text-gray-600 max-w-2xl mx-auto">
+          Upload your receipts for automatic data extraction and rule-based evaluation. 
+          Reviewers can then finalize the decision.
+        </p>
+      </header>
+
+      <main className="flex-1 flex flex-col items-center w-full">
+        {error && (
+          <div className="mb-8 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 max-w-xl w-full rounded">
+            <p className="font-medium">Error</p>
+            <p>{error}</p>
+            <button onClick={() => setError(null)} className="text-sm underline mt-2">Dismiss</button>
+          </div>
+        )}
+
+        {isCompleted ? (
+          <div className="text-center p-10 bg-white rounded-xl shadow max-w-md w-full border border-green-200">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Review Submitted</h2>
+            <p className="text-gray-600 mb-6">The receipt has been successfully reviewed and saved.</p>
+            <button
+              onClick={handleReset}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+              Process Another Receipt
+            </button>
+          </div>
+        ) : !extractedData || !evaluation ? (
+          <UploadComponent onImageSelected={handleImageSelected} isLoading={isLoading} />
+        ) : (
+          <ReviewerForm
+            initialData={extractedData}
+            evaluation={evaluation}
+            imageBase64={imageBase64!}
+            onSubmit={handleReviewSubmit}
+            onCancel={handleReset}
+          />
+        )}
       </main>
     </div>
   );
