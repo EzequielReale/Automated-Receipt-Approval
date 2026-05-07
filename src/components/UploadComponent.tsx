@@ -23,16 +23,41 @@ export default function UploadComponent({ onImageSelected, isLoading }: UploadCo
 
   const processFile = (file: File) => {
     if (!file || !file.type.startsWith('image/')) return;
+
     const reader = new FileReader();
     reader.onload = (e) => {
-      const result = e.target?.result as string;
-      if (result) {
-        // Strip the data:image/...;base64, prefix
-        const base64 = result.split(',')[1];
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const maxDimension = 1600; // Good balance for OCR
+
+        if (width > height) {
+          if (width > maxDimension) {
+            height *= maxDimension / width;
+            width = maxDimension;
+          }
+        } else {
+          if (height > maxDimension) {
+            width *= maxDimension / height;
+            height = maxDimension;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+        
+        // Use JPEG with 0.8 quality for good compression while maintaining readability
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        const base64 = dataUrl.split(',')[1];
         if (base64) {
           onImageSelected(base64);
         }
-      }
+      };
+      img.src = e.target?.result as string;
     };
     reader.readAsDataURL(file);
   };
