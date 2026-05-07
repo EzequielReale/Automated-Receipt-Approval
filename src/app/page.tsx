@@ -1,113 +1,43 @@
-'use client';
-
-import React, { useState } from 'react';
-import UploadComponent from '../components/UploadComponent';
-import ReviewerForm from '../components/ReviewerForm';
-import { ExtractedReceiptData, RuleEvaluationResult, ReceiptStatus } from '../lib/types';
-import { evaluateReceipt } from '../lib/ruleEngine';
+import React from 'react';
+import Link from 'next/link';
 
 export default function Home() {
-  const [imageBase64, setImageBase64] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  
-  const [extractedData, setExtractedData] = useState<ExtractedReceiptData | null>(null);
-  const [evaluation, setEvaluation] = useState<RuleEvaluationResult | null>(null);
-  const [isCompleted, setIsCompleted] = useState(false);
-
-  const handleImageSelected = async (base64: string) => {
-    setImageBase64(base64);
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const res = await fetch('/api/extract', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageBase64: base64 }),
-      });
-
-      const json = await res.json();
-
-      if (!res.ok) {
-        throw new Error(json.error || 'Failed to extract data');
-      }
-
-      const data = json.data as ExtractedReceiptData;
-      setExtractedData(data);
-      
-      // Run the rule engine locally
-      const evalResult = evaluateReceipt(data);
-      setEvaluation(evalResult);
-
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'An error occurred during extraction');
-      setImageBase64(null); // Reset image on error
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleReviewSubmit = (finalData: ExtractedReceiptData, finalStatus: ReceiptStatus, comment: string) => {
-    console.log('Final Submission:', { finalData, finalStatus, comment });
-    setIsCompleted(true);
-  };
-
-  const handleReset = () => {
-    setImageBase64(null);
-    setExtractedData(null);
-    setEvaluation(null);
-    setIsCompleted(false);
-    setError(null);
-  };
-
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col py-10 px-4">
-      <header className="mb-10 text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">Auto Receipt Approval</h1>
-        <p className="text-gray-600 max-w-2xl mx-auto">
-          Upload your receipts for automatic data extraction and rule-based evaluation. 
-          Reviewers can then finalize the decision.
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+      <div className="max-w-2xl text-center space-y-8">
+        <h1 className="text-5xl font-extrabold text-gray-900 tracking-tight">
+          Auto Receipt Approval
+        </h1>
+        <p className="text-xl text-gray-600 leading-relaxed">
+          Welcome to the automated receipt processing system. Employees can upload receipts for AI data extraction and rule-based evaluation. Reviewers can audit and finalize the decisions.
         </p>
-      </header>
+        
+        <div className="pt-8">
+          <Link 
+            href="/login" 
+            className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-10 rounded-full transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-lg"
+          >
+            Login to System
+          </Link>
+        </div>
 
-      <main className="flex-1 flex flex-col items-center w-full">
-        {error && (
-          <div className="mb-8 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 max-w-xl w-full rounded">
-            <p className="font-medium">Error</p>
-            <p>{error}</p>
-            <button onClick={() => setError(null)} className="text-sm underline mt-2">Dismiss</button>
-          </div>
-        )}
-
-        {isCompleted ? (
-          <div className="text-center p-10 bg-white rounded-xl shadow max-w-md w-full border border-green-200">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
+        <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mb-4">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Review Submitted</h2>
-            <p className="text-gray-600 mb-6">The receipt has been successfully reviewed and saved.</p>
-            <button
-              onClick={handleReset}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Process Another Receipt
-            </button>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">For Employees</h3>
+            <p className="text-gray-600">Quickly upload your receipts. The AI automatically extracts merchant data, dates, amounts, and categorizes expenses.</p>
           </div>
-        ) : !extractedData || !evaluation ? (
-          <UploadComponent onImageSelected={handleImageSelected} isLoading={isLoading} />
-        ) : (
-          <ReviewerForm
-            initialData={extractedData}
-            evaluation={evaluation}
-            imageBase64={imageBase64!}
-            onSubmit={handleReviewSubmit}
-            onCancel={handleReset}
-          />
-        )}
-      </main>
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center mb-4">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            </div>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">For Reviewers</h3>
+            <p className="text-gray-600">Audit receipts that require human intervention. Verify extracted data against the original image and provide final approval.</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

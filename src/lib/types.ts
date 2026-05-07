@@ -27,3 +27,23 @@ export interface RuleEvaluationResult {
   status: ReceiptStatus;
   reason: string;
 }
+
+export type UserRole = 'EMPLOYEE' | 'REVIEWER';
+
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole;
+}
+
+export interface Ticket {
+  id: string;
+  userId: string;
+  data: ExtractedReceiptData;
+  evaluation: RuleEvaluationResult;
+  finalStatus?: ReceiptStatus;
+  comment?: string;
+  imageBase64: string;
+  createdAt: string;
+}

@@ -68,18 +68,34 @@ Return ONLY a valid JSON object with these exact keys.`
     }
 
     const result = await response.json();
+
+    console.log('result ->', result);
     
-    // Per user instruction, it follows Azure Chat Completions standard
-    const extractedText = result?.choices?.[0]?.message?.content || '{}';
+    // Support both Chat Completions (choices) and Responses API (output)
+    let extractedText = '{}';
+    if (result?.choices?.[0]?.message?.content) {
+      extractedText = result.choices[0].message.content;
+    } else if (result?.output) {
+      // Responses API: find the 'message' item (skip 'reasoning' items)
+      const messageItem = result.output.find((item: any) => item.type === 'message');
+      if (messageItem?.content) {
+        const textPart = messageItem.content.find((p: any) => p.type === 'output_text');
+        if (textPart) extractedText = textPart.text;
+      }
+    }
+
+    console.log('extractedText ->', extractedText);
 
     const jsonString = extractedText.replace(/```json/gi, '').replace(/```/g, '').trim();
     
     let parsedData: ExtractedReceiptData;
     try {
       parsedData = JSON.parse(jsonString);
-    } catch (_) {
+    } catch {
        return NextResponse.json({ error: 'Failed to parse AI response', rawText: extractedText }, { status: 500 });
     }
+
+    console.log('parsedData ->', parsedData);
 
     return NextResponse.json({ data: parsedData });
   } catch (error: unknown) {
