@@ -23,12 +23,6 @@ export async function GET(request: NextRequest) {
       });
     } else if (role === 'REVIEWER') {
       tickets = await prisma.ticket.findMany({
-        where: {
-          OR: [
-            { ai_status: 'Needs Review' },
-            { final_status: { not: null } }
-          ]
-        },
         orderBy: { createdAt: 'desc' }
       });
     } else {

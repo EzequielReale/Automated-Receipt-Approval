@@ -127,7 +127,7 @@ Return ONLY a valid JSON object with these exact keys.`
         category: parsedData.category || 'Unknown',
         ai_status: evaluation.status,
         ai_reasoning: evaluation.reason,
-        final_status: evaluation.status === 'Needs Review' ? null : evaluation.status,
+        final_status: null,
         imageBase64: imageBase64,
       }
     });

@@ -15,13 +15,11 @@ async function main() {
     where: { email: 'employee@demo.com' },
     update: {
       password_hash: employeePassword,
-      name: 'Alice Employee',
       role: Role.EMPLOYEE,
     },
     create: {
       email: 'employee@demo.com',
       password_hash: employeePassword,
-      name: 'Alice Employee',
       role: Role.EMPLOYEE,
     },
   });
@@ -31,13 +29,11 @@ async function main() {
     where: { email: 'reviewer@demo.com' },
     update: {
       password_hash: reviewerPassword,
-      name: 'Bob Reviewer',
       role: Role.REVIEWER,
     },
     create: {
       email: 'reviewer@demo.com',
       password_hash: reviewerPassword,
-      name: 'Bob Reviewer',
       role: Role.REVIEWER,
     },
   });

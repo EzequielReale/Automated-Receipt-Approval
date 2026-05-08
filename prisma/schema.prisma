@@ -16,7 +16,6 @@ model User {
   id            String   @id @default(uuid())
   email         String   @unique
   password_hash String
-  name          String
   role          Role
   tickets       Ticket[]
 }
