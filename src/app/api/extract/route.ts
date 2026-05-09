@@ -85,8 +85,6 @@ Return ONLY a valid JSON object with these exact keys.`
     }
 
     const result = await response.json();
-
-    console.log('result ->', result);
     
     // Support both Chat Completions (choices) and Responses API (output)
     let extractedText = '{}';
@@ -101,8 +99,6 @@ Return ONLY a valid JSON object with these exact keys.`
       }
     }
 
-    console.log('extractedText ->', extractedText);
-
     const jsonString = extractedText.replace(/```json/gi, '').replace(/```/g, '').trim();
     
     let parsedData: ExtractedReceiptData;
@@ -111,8 +107,6 @@ Return ONLY a valid JSON object with these exact keys.`
     } catch {
        return NextResponse.json({ error: 'Failed to parse AI response', rawText: extractedText }, { status: 500 });
     }
-
-    console.log('parsedData ->', parsedData);
 
     // Run Rule Engine
     const evaluation = evaluateReceipt(parsedData);
