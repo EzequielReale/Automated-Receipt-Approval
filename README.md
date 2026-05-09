@@ -87,10 +87,11 @@ I prioritized a **Premium User Experience** to ensure high adoption rates:
 
 ## ⚖️ Trade-offs & Limitations
 
-- **OCR Accuracy**: While GPT-4o Vision is state-of-the-art, extremely blurry or handwritten receipts may require human correction. This is why the "Needs Review" and "Edit" features are central to the architecture.
-- **Rate Limiting**: The system is tuned for the provided 10,000 TPM limit. I implemented error handling to catch 429 responses and notify the user to retry.
+- **Rate Limiting**: The system is tuned for the provided 10,000 TPM limit. I implemented error handling to catch 429 responses and notify the user to retry. However, in a production environment, I would implement a proper logging mechanism for rate limiting events.
 - **Storage**: For this demo, images are stored as Base64 strings in the PostgreSQL database. For a production-scale system, I would move these to a Blob Storage solution (like Azure Blob Storage) and store only the URL.
 - **Duplicate Detection**: The current implementation does not check for duplicate receipt uploads (e.g., the same physical ticket uploaded multiple times). For the purpose of this demo, this validation was omitted to focus on the extraction and rule engine logic.
+- **Hardcoded Users**: For this demo, the users are hardcoded in the database seed. In production, I would implement a user management system.
+- **No Error Retry**: The system does not implement a retry mechanism for failed operations. This is for saving AI tokens, minimizing costs for a demo environment. 
 
 ---
 
