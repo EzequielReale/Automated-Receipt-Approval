@@ -1,7 +1,8 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 
-export async function POST() {
-  const response = NextResponse.redirect(new URL('/', process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'));
+export async function POST(request: NextRequest) {
+  const origin = request.nextUrl.origin;
+  const response = NextResponse.redirect(new URL('/', origin));
   
   response.cookies.delete('auth_token');
   
