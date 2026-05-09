@@ -117,10 +117,9 @@ Return ONLY a valid JSON object with these exact keys.`
     // Run Rule Engine
     const evaluation = evaluateReceipt(parsedData);
 
-    // Save ticket atomically
+    // Save ticket atomically with its creation event
     const newTicket = await prisma.ticket.create({
       data: {
-        userId,
         merchant_name: parsedData.merchant_name || 'Unknown',
         date: parsedData.receipt_date || new Date().toISOString(),
         amount: Number(parsedData.total_amount) || 0,
@@ -129,6 +128,12 @@ Return ONLY a valid JSON object with these exact keys.`
         ai_reasoning: evaluation.reason,
         final_status: null,
         imageBase64: imageBase64,
+        events: {
+          create: {
+            type: 'CREATED',
+            userId: userId,
+          }
+        }
       }
     });
 

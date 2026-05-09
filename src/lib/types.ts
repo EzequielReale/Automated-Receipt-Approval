@@ -39,10 +39,18 @@ export interface User {
 export interface Ticket {
   id: string;
   userId: string;
+  creatorEmail?: string;
+  reviewerId?: string;
+  reviewerEmail?: string;
   data: ExtractedReceiptData;
   evaluation: RuleEvaluationResult;
   finalStatus?: ReceiptStatus;
   comment?: string;
   imageBase64: string;
   createdAt: string;
+  history?: {
+    type: string;
+    user: string;
+    date: string;
+  }[];
 }

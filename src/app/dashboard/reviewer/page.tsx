@@ -205,12 +205,19 @@ export default function ReviewerDashboard() {
                       </td>
                       <td className="px-6 py-4">
                         {isFinalized ? (
-                          <span className={`px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full ${
-                            ticket.finalStatus === 'Approved' ? 'bg-green-600 text-white shadow-sm' :
-                            'bg-red-600 text-white shadow-sm'
-                          }`}>
-                            {ticket.finalStatus}
-                          </span>
+                          <>
+                            <span className={`px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full ${
+                              ticket.finalStatus === 'Approved' ? 'bg-green-600 text-white shadow-sm' :
+                              'bg-red-600 text-white shadow-sm'
+                            }`}>
+                              {ticket.finalStatus}
+                            </span>
+                            {ticket.reviewerEmail && (
+                              <div className="text-[10px] text-gray-400 mt-1 font-medium">
+                                by {ticket.reviewerEmail}
+                              </div>
+                            )}
+                          </>
                         ) : (
                           <span className="inline-flex items-center gap-1.5 text-xs font-bold text-yellow-600 bg-yellow-50 px-3 py-1 rounded-full border border-yellow-100">
                             <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse"></span>

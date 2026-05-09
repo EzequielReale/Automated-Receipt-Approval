@@ -67,6 +67,13 @@ Recognizing that AI is not infallible, the system allows Reviewers to:
 - **Authentication**: Role-based access control (RBAC) ensures Employees can only see their own receipts, while Reviewers can see the entire organization's queue.
 - **Environment Safety**: Sensitive credentials (Azure Keys, Database URLs) are managed via environment variables.
 
+### 5. Auditability & Traceability (Event-Based Architecture)
+The system uses a decoupled, event-sourced pattern to track the lifecycle of every ticket:
+- **TicketEvent Model**: Instead of fixed creator/reviewer fields, every significant action ('CREATED', 'REVIEWED') is stored in a separate table linked to the User and Ticket.
+- **Full Audit Trail**: This architecture provides a permanent history of who did what and when. Even if a ticket is reviewed multiple times, every decision is preserved.
+- **Flexibility**: By using a Many-to-Many relationship through events, the system can easily accommodate new roles (e.g., Auditors or Managers) or multi-stage approval flows without schema migrations.
+- **Data Integrity**: The current state (final status, reviewer comment) is mirrored on the main Ticket model for performance, while the metadata lives in the event log.
+
 ---
 
 ## 🎨 Design Decisions

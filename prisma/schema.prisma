@@ -17,7 +17,7 @@ model User {
   email         String   @unique
   password_hash String
   role          Role
-  tickets       Ticket[]
+  events        TicketEvent[]
 }
 
 model Ticket {
@@ -33,6 +33,17 @@ model Ticket {
   imageBase64      String   @db.Text
   createdAt        DateTime @default(now())
   
-  user             User     @relation(fields: [userId], references: [id])
-  userId           String
+  events           TicketEvent[]
+}
+
+model TicketEvent {
+  id        String   @id @default(uuid())
+  type      String   // 'CREATED', 'REVIEWED', 'EDITED', etc.
+  createdAt DateTime @default(now())
+  
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  ticketId  String
+  
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
 }

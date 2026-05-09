@@ -19,6 +19,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     const { id: ticketId } = await params;
     const body = await request.json();
+    const reviewerId = payload.sub as string;
     
     await prisma.ticket.update({
       where: { id: ticketId },
@@ -29,7 +30,13 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         merchant_name: body.data?.merchant_name,
         date: body.data?.receipt_date,
         amount: body.data?.total_amount ? Number(body.data.total_amount) : undefined,
-        category: body.data?.category
+        category: body.data?.category,
+        events: {
+          create: {
+            type: 'REVIEWED',
+            userId: reviewerId
+          }
+        }
       }
     });
 
