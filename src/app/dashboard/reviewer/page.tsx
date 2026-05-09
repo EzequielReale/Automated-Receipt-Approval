@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import ReviewerForm from '../../../components/ReviewerForm';
 import { Ticket, ExtractedReceiptData, ReceiptStatus } from '../../../lib/types';
 import { formatDate } from '../../../lib/utils';
@@ -11,7 +11,7 @@ export default function ReviewerDashboard() {
   const [visibleCount, setVisibleCount] = useState(10);
   const [filterPending, setFilterPending] = useState(true);
 
-  const fetchTickets = async () => {
+  const fetchTickets = useCallback(async () => {
     try {
       const res = await fetch('/api/tickets');
       if (res.ok) {
@@ -21,11 +21,12 @@ export default function ReviewerDashboard() {
     } catch (e) {
       console.error(e);
     }
-  };
+  }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchTickets();
-  }, []);
+  }, [fetchTickets]);
 
   const handleReviewSubmit = async (finalData: ExtractedReceiptData, finalStatus: ReceiptStatus, comment: string) => {
     if (!selectedTicket) return;
