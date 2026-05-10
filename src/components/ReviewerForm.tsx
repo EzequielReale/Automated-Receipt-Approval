@@ -26,7 +26,7 @@ export default function ReviewerForm({
   onCancel 
 }: ReviewerFormProps) {
   const [formData, setFormData] = useState<ExtractedReceiptData>(initialData);
-  const [status, setStatus] = useState<ReceiptStatus>(initialStatus || (evaluation.status === 'Needs Review' ? 'Approved' : evaluation.status));
+  const [status, setStatus] = useState<ReceiptStatus | ''>(initialStatus || '');
   const [comment, setComment] = useState<string>(initialComment || '');
   const [error, setError] = useState<string | null>(null);
 
@@ -42,12 +42,16 @@ export default function ReviewerForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (readOnly) return;
+    if (!status) {
+      setError('Please select a final status (Approve or Reject).');
+      return;
+    }
     if (!comment.trim()) {
       setError('A comment is mandatory to finalize the review.');
       return;
     }
     setError(null);
-    onSubmit(formData, status, comment);
+    onSubmit(formData, status as ReceiptStatus, comment);
   };
 
   return (
@@ -164,11 +168,15 @@ export default function ReviewerForm({
             <label className="block text-sm font-bold text-gray-700">Final Status</label>
             <select
               value={status}
-              onChange={(e) => setStatus(e.target.value as ReceiptStatus)}
+              onChange={(e) => {
+                setStatus(e.target.value as ReceiptStatus);
+                if (error && e.target.value) setError(null);
+              }}
               disabled={readOnly}
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-bold text-lg appearance-none bg-no-repeat bg-[right_1rem_center] disabled:bg-gray-50 disabled:text-gray-500"
               style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%236B7280\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\' /%3E%3C/svg%3E")', backgroundSize: '1.5em' }}
             >
+              <option value="" disabled>Select one</option>
               <option value="Approved">Approve</option>
               <option value="Rejected">Reject</option>
             </select>
@@ -180,7 +188,10 @@ export default function ReviewerForm({
             </label>
             <textarea
               value={comment}
-              onChange={(e) => setComment(e.target.value)}
+              onChange={(e) => {
+                setComment(e.target.value);
+                if (error && e.target.value.trim()) setError(null);
+              }}
               disabled={readOnly}
               className={`w-full px-4 py-3 border rounded-xl focus:ring-2 outline-none min-h-[120px] transition-all disabled:bg-gray-50 disabled:text-gray-500 ${error ? 'border-red-500 focus:ring-red-500 bg-red-50/50' : 'border-gray-300 focus:ring-blue-500'}`}
               placeholder="Explain the reason for this final decision..."
