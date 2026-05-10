@@ -1,6 +1,7 @@
 import React from 'react';
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
+import { logout } from '../actions/auth';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
@@ -38,7 +39,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           }`}>
             {role}
           </span>
-          <form action="/api/auth/logout" method="POST">
+          <form action={logout}>
             <button className="flex items-center gap-2 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors font-semibold group">
               <span>Logout</span>
               <svg 

@@ -21,9 +21,16 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
+    const reviewerId = payload.sub as string;
+    
+    // Verify user exists in DB to prevent foreign key violations
+    const userExists = await prisma.user.findUnique({ where: { id: reviewerId } });
+    if (!userExists) {
+      return NextResponse.json({ error: 'User session invalid. Please log in again.' }, { status: 401 });
+    }
+
     const { id: ticketId } = await params;
     const body = await request.json();
-    const reviewerId = payload.sub as string;
     
     await prisma.ticket.update({
       where: { id: ticketId },

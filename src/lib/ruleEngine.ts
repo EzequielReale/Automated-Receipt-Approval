@@ -1,49 +1,67 @@
-import { ExtractedReceiptData, RuleEvaluationResult } from './types';
+import { ExtractedReceiptData, RuleEvaluationResult, ReceiptStatus } from './types';
 import { VALID_CATEGORIES } from './constants';
 
-export function evaluateReceipt(data: ExtractedReceiptData): RuleEvaluationResult {
-  const { category, receipt_date, total_amount } = data;
+type RuleFunction = (data: ExtractedReceiptData) => RuleEvaluationResult | null;
 
-  // 1. Validating Category (Case-insensitive, normalized)
-  const normalizedCategory = category?.trim().toLowerCase() || '';
+const validateCategory: RuleFunction = (data) => {
+  const normalizedCategory = data.category?.trim().toLowerCase() || '';
   const isCategoryValid = VALID_CATEGORIES.some(
     (validCat) => validCat.toLowerCase() === normalizedCategory
   );
 
   if (!isCategoryValid) {
-    return { status: 'Rejected', reason: `Invalid category: ${category || 'None provided'}` };
+    return { status: 'Rejected', reason: `Invalid category: ${data.category || 'None provided'}` };
   }
+  return null;
+};
 
-  // 2. Date validations
-  const parsedDate = new Date(receipt_date);
+const validateDate: RuleFunction = (data) => {
+  const parsedDate = new Date(data.receipt_date);
   if (isNaN(parsedDate.getTime())) {
-    return { status: 'Rejected', reason: `Invalid date format: ${receipt_date}` };
+    return { status: 'Rejected', reason: `Invalid date format: ${data.receipt_date}` };
   }
 
   const today = new Date();
-  today.setHours(0, 0, 0, 0); // Start of today
+  today.setHours(0, 0, 0, 0);
 
   const receiptDay = new Date(parsedDate);
-  receiptDay.setHours(0, 0, 0, 0); // Start of receipt day
+  receiptDay.setHours(0, 0, 0, 0);
 
-  // Reject if in the future
   if (receiptDay > today) {
-    return { status: 'Rejected', reason: `Receipt date is in the future: ${receipt_date}` };
+    return { status: 'Rejected', reason: `Receipt date is in the future: ${data.receipt_date}` };
   }
 
-  // Reject if strictly older than 12 months
   const twelveMonthsAgo = new Date(today);
   twelveMonthsAgo.setMonth(today.getMonth() - 12);
   
   if (receiptDay < twelveMonthsAgo) {
-    return { status: 'Rejected', reason: `Receipt date is older than 12 months: ${receipt_date}` };
+    return { status: 'Rejected', reason: `Receipt date is older than 12 months: ${data.receipt_date}` };
   }
 
-  // 3. Needs Review validation
-  if (total_amount >= 100) {
+  return null;
+};
+
+const validateAmount: RuleFunction = (data) => {
+  if (data.total_amount >= 100) {
     return { status: 'Needs Review', reason: 'Amount is 100 or greater' };
   }
+  return null;
+};
 
-  // 4. Approved validation
-  return { status: 'Approved', reason: 'Category valid, date valid, and amount is under 100' };
+export function evaluateReceipt(data: ExtractedReceiptData): RuleEvaluationResult {
+  const rules: RuleFunction[] = [
+    validateCategory,
+    validateDate,
+    validateAmount
+  ];
+
+  for (const rule of rules) {
+    const result = rule(data);
+    if (result) return result;
+  }
+
+  return { 
+    status: 'Approved', 
+    reason: 'Category valid, date valid, and amount is under 100' 
+  };
 }

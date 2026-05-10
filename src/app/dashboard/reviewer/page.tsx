@@ -4,6 +4,10 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import ReviewerForm from '../../../components/ReviewerForm';
 import { Ticket, ExtractedReceiptData, ReceiptStatus } from '../../../lib/types';
 import { formatDate } from '../../../lib/utils';
+import { Button } from '../../../components/ui/Button';
+import { Badge } from '../../../components/ui/Badge';
+import { Icons } from '../../../components/ui/Icons';
+import { Card } from '../../../components/ui/Card';
 
 export default function ReviewerDashboard() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -24,7 +28,6 @@ export default function ReviewerDashboard() {
   }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchTickets();
   }, [fetchTickets]);
 
@@ -89,12 +92,14 @@ export default function ReviewerDashboard() {
     const isFinalized = !!selectedTicket.finalStatus;
     return (
       <div className="space-y-6">
-        <button 
+        <Button 
+          variant="outline"
+          size="sm"
           onClick={() => setSelectedTicket(null)}
-          className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-lg transition-all font-medium text-sm border border-gray-200 shadow-sm"
+          leftIcon={<Icons.ArrowLeft className="w-4 h-4" />}
         >
-          <span>&larr;</span> Back to Inbox
-        </button>
+          Back to Inbox
+        </Button>
         <ReviewerForm
           initialData={selectedTicket.data}
           evaluation={selectedTicket.evaluation}
@@ -111,174 +116,171 @@ export default function ReviewerDashboard() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-          <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-          </svg>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h2 className="text-2xl font-extrabold text-gray-800 flex items-center gap-2">
+          <Icons.Inbox className="w-8 h-8 text-purple-600" />
           Reviewer Inbox
         </h2>
         
-        <div className="flex items-center gap-4 bg-white p-1 rounded-xl border border-gray-200 shadow-sm">
-          <button 
+        <div className="flex items-center gap-2 bg-white p-1.5 rounded-2xl border border-gray-200 shadow-sm">
+          <Button
+            variant={filterPending ? 'secondary' : 'ghost'}
+            size="sm"
             onClick={() => setFilterPending(true)}
-            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${filterPending ? 'bg-purple-600 text-white shadow-md' : 'text-gray-600 hover:bg-gray-50'}`}
+            className="!rounded-xl"
           >
             Pending Only
-          </button>
-          <button 
+          </Button>
+          <Button
+            variant={!filterPending ? 'secondary' : 'ghost'}
+            size="sm"
             onClick={() => setFilterPending(false)}
-            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${!filterPending ? 'bg-purple-600 text-white shadow-md' : 'text-gray-600 hover:bg-gray-50'}`}
+            className="!rounded-xl"
           >
             All Tickets
-          </button>
+          </Button>
           <div className="w-px h-6 bg-gray-200 mx-1"></div>
-          <button 
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={fetchTickets}
-            className="p-2 text-gray-500 hover:text-purple-600 transition-colors"
             title="Refresh"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-          </button>
+            <Icons.Refresh className="w-5 h-5" />
+          </Button>
         </div>
       </div>
 
       {filteredTickets.length === 0 ? (
-        <div className="bg-white p-12 rounded-2xl shadow-sm border border-gray-200 text-center">
-          <div className="w-16 h-16 bg-purple-50 text-purple-400 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
+        <Card className="text-center py-20">
+          <div className="w-20 h-20 bg-purple-50 text-purple-400 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Icons.Check className="w-10 h-10" />
           </div>
-          <h3 className="text-xl font-bold text-gray-800 mb-2">No tickets to show</h3>
-          <p className="text-gray-500 max-w-xs mx-auto">
-            {filterPending ? 'You have reviewed all current tickets. Great job!' : 'No tickets found in the system.'}
+          <h3 className="text-2xl font-bold text-gray-800 mb-2">All caught up!</h3>
+          <p className="text-gray-500 max-w-sm mx-auto">
+            {filterPending ? 'No pending tickets left to review.' : 'The inbox is empty.'}
           </p>
-        </div>
+        </Card>
       ) : (
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+        <Card className="!p-0 overflow-hidden shadow-xl">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-gray-100">
+              <thead className="bg-gray-50/50">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Date & Merchant</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Amount & Category</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">AI Insight</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Final Status</th>
-                  <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Date & Merchant</th>
+                  <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Amount & Category</th>
+                  <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">AI Insight</th>
+                  <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
+                  <th className="px-6 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Actions</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-100">
-                {filteredTickets.slice(0, visibleCount).map(ticket => {
-                  const isFinalized = !!ticket.finalStatus;
-                  const aiStatus = ticket.evaluation.status;
-                  const canConfirm = !isFinalized && aiStatus !== 'Needs Review';
-                  
-                  return (
-                    <tr key={ticket.id} className="hover:bg-gray-50/80 transition-colors group">
-                      <td className="px-6 py-4">
-                        <div className="text-sm font-mono text-gray-400 mb-1">{formatDate(ticket.createdAt)}</div>
-                        <div className="text-sm font-bold text-gray-900 group-hover:text-purple-700 transition-colors">
-                          {ticket.data.merchant_name || 'Unknown'}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-lg font-extrabold text-gray-900 mb-1">${ticket.data.total_amount}</div>
-                        <div className="text-xs font-medium text-gray-500 px-2 py-0.5 bg-gray-100 rounded-md inline-block">
-                          {ticket.data.category}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 max-w-xs">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase ${
-                            aiStatus === 'Approved' ? 'bg-green-100 text-green-700 border border-green-200' :
-                            aiStatus === 'Rejected' ? 'bg-red-100 text-red-700 border border-red-200' :
-                            'bg-yellow-100 text-yellow-700 border border-yellow-200'
-                          }`}>
-                            AI: {aiStatus}
-                          </span>
-                        </div>
-                        <div className="text-xs text-gray-500 line-clamp-2 italic" title={ticket.evaluation.reason}>
-                          &quot;{ticket.evaluation.reason}&quot;
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        {isFinalized ? (
-                          <>
-                            <span className={`px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full ${
-                              ticket.finalStatus === 'Approved' ? 'bg-green-600 text-white shadow-sm' :
-                              'bg-red-600 text-white shadow-sm'
-                            }`}>
-                              {ticket.finalStatus}
-                            </span>
-                            {ticket.reviewerEmail && (
-                              <div className="text-[10px] text-gray-400 mt-1 font-medium">
-                                by {ticket.reviewerEmail}
-                              </div>
-                            )}
-                          </>
-                        ) : (
-                          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-yellow-600 bg-yellow-50 px-3 py-1 rounded-full border border-yellow-100">
-                            <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse"></span>
-                            Pending
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right space-x-2">
-                        {canConfirm && (
-                          <button 
-                            onClick={() => handleConfirmAI(ticket)}
-                            className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all"
-                            title="Confirm AI decision"
-                          >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                          </button>
-                        )}
-                        {!isFinalized ? (
-                          <button 
-                            onClick={() => setSelectedTicket(ticket)}
-                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                            title="Edit and Review"
-                          >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                          </button>
-                        ) : (
-                          <button 
-                            onClick={() => setSelectedTicket(ticket)}
-                            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
-                            title="View Details"
-                          >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                            </svg>
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
+              <tbody className="divide-y divide-gray-50">
+                {filteredTickets.slice(0, visibleCount).map(ticket => (
+                  <TicketRow 
+                    key={ticket.id} 
+                    ticket={ticket} 
+                    onSelect={() => setSelectedTicket(ticket)}
+                    onConfirmAI={() => handleConfirmAI(ticket)}
+                  />
+                ))}
               </tbody>
             </table>
           </div>
           {filteredTickets.length > visibleCount && (
-            <div className="p-4 bg-gray-50 border-t border-gray-100 text-center">
-              <button 
+            <div className="p-6 bg-gray-50/50 text-center border-t border-gray-50">
+              <Button 
+                variant="outline"
+                size="sm"
                 onClick={() => setVisibleCount(prev => prev + 10)}
-                className="text-sm font-bold text-purple-600 hover:text-purple-800 transition-colors px-6 py-2 bg-white border border-purple-100 rounded-full shadow-sm hover:shadow-md"
+                className="bg-white"
               >
                 Load more tickets
-              </button>
+              </Button>
             </div>
           )}
-        </div>
+        </Card>
       )}
     </div>
+  );
+}
+
+function TicketRow({ ticket, onSelect, onConfirmAI }: { ticket: Ticket, onSelect: () => void, onConfirmAI: () => void }) {
+  const isFinalized = !!ticket.finalStatus;
+  const aiStatus = ticket.evaluation.status;
+  const canConfirm = !isFinalized && aiStatus !== 'Needs Review';
+  
+  const getBadgeVariant = (status: string) => {
+    switch (status) {
+      case 'Approved': return 'success';
+      case 'Rejected': return 'danger';
+      default: return 'warning';
+    }
+  };
+
+  return (
+    <tr className="hover:bg-gray-50/50 transition-colors group">
+      <td className="px-6 py-5">
+        <div className="text-[10px] font-bold text-gray-400 mb-1 font-mono uppercase">{formatDate(ticket.createdAt)}</div>
+        <div className="text-sm font-bold text-gray-900 group-hover:text-purple-700 transition-colors">
+          {ticket.data.merchant_name || 'Unknown'}
+        </div>
+      </td>
+      <td className="px-6 py-5">
+        <div className="text-lg font-black text-gray-900 mb-1 tracking-tight">
+          <span className="text-xs text-gray-400 font-normal mr-0.5">$</span>
+          {ticket.data.total_amount}
+        </div>
+        <div className="text-[10px] font-bold text-gray-500 px-2 py-0.5 bg-gray-100 rounded-md inline-block uppercase">
+          {ticket.data.category}
+        </div>
+      </td>
+      <td className="px-6 py-5 max-w-xs">
+        <div className="mb-1.5">
+          <Badge variant={getBadgeVariant(aiStatus)} className="!text-[9px] !px-1.5 !py-0">AI: {aiStatus}</Badge>
+        </div>
+        <div className="text-[11px] text-gray-500 line-clamp-1 italic" title={ticket.evaluation.reason}>
+          &quot;{ticket.evaluation.reason}&quot;
+        </div>
+      </td>
+      <td className="px-6 py-5">
+        {isFinalized ? (
+          <div>
+            <Badge variant={getBadgeVariant(ticket.finalStatus!)}>{ticket.finalStatus}</Badge>
+            {ticket.reviewerEmail && (
+              <div className="text-[9px] text-gray-400 mt-1 font-bold uppercase">
+                {ticket.reviewerEmail}
+              </div>
+            )}
+          </div>
+        ) : (
+          <span className="inline-flex items-center gap-1.5 text-[10px] font-black text-yellow-600 bg-yellow-50 px-2.5 py-1 rounded-full border border-yellow-100 uppercase">
+            <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse"></span>
+            Pending
+          </span>
+        )}
+      </td>
+      <td className="px-6 py-5 text-right space-x-1">
+        {canConfirm && (
+          <Button 
+            variant="ghost"
+            size="icon"
+            onClick={onConfirmAI}
+            className="text-green-600 hover:bg-green-50"
+            title="Confirm AI decision"
+          >
+            <Icons.Check className="w-5 h-5" />
+          </Button>
+        )}
+        <Button 
+          variant="ghost"
+          size="icon"
+          onClick={onSelect}
+          className={!isFinalized ? "text-blue-600 hover:bg-blue-50" : "text-gray-400 hover:bg-gray-100"}
+          title={!isFinalized ? "Edit and Review" : "View Details"}
+        >
+          {!isFinalized ? <Icons.Edit className="w-5 h-5" /> : <Icons.Eye className="w-5 h-5" />}
+        </Button>
+      </td>
+    </tr>
   );
 }

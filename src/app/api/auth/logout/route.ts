@@ -1,11 +1,12 @@
 import { NextResponse, NextRequest } from 'next/server';
 
 export async function POST(request: NextRequest) {
-  const baseUrl = process.env.BASE_URL || request.nextUrl.origin;
-  
-  const response = NextResponse.redirect(new URL('/', baseUrl));
-  
-  response.cookies.delete('auth_token');
-  
-  return response;
+  try {
+    const response = NextResponse.redirect(new URL('/', request.url), { status: 303 });
+    response.cookies.delete('auth_token');
+    return response;
+  } catch (error) {
+    console.error('Logout error:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
 }
