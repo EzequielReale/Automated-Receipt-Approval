@@ -1,7 +1,13 @@
 import { SignJWT, jwtVerify } from 'jose';
 import { User } from './types';
 
-const getSecret = () => new TextEncoder().encode(process.env.JWT_SECRET || 'super-secret-key-for-demo');
+const getSecret = () => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('JWT_SECRET environment variable is missing');
+  }
+  return new TextEncoder().encode(secret);
+};
 
 export async function createToken(user: User) {
   return await new SignJWT({ sub: user.id, role: user.role, email: user.email })

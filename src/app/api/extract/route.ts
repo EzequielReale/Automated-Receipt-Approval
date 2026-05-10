@@ -6,7 +6,11 @@ import { prisma } from '../../../lib/prisma';
 import { evaluateReceipt } from '../../../lib/ruleEngine';
 import { jwtVerify } from 'jose';
 
-const getSecret = () => new TextEncoder().encode(process.env.JWT_SECRET || 'super-secret-key-for-demo');
+const getSecret = () => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) throw new Error('JWT_SECRET environment variable is missing');
+  return new TextEncoder().encode(secret);
+};
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,18 +31,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Image is required' }, { status: 400 });
     }
 
-    const AZURE_OPENAI_ENDPOINT = process.env.AZURE_OPENAI_ENDPOINT;
-    const AZURE_OPENAI_KEY = process.env.AZURE_OPENAI_KEY;
-    const AZURE_DEPLOYMENT_NAME = process.env.AZURE_DEPLOYMENT_NAME;
+    const AI_ENDPOINT = process.env.AI_ENDPOINT;
+    const AI_API_KEY = process.env.AI_API_KEY;
+    const AI_DEPLOYMENT_NAME = process.env.AI_DEPLOYMENT_NAME;
 
-    if (!AZURE_OPENAI_ENDPOINT || !AZURE_OPENAI_KEY || !AZURE_DEPLOYMENT_NAME) {
-      return NextResponse.json({ error: 'Azure OpenAI configuration is missing' }, { status: 500 });
+    if (!AI_ENDPOINT || !AI_API_KEY || !AI_DEPLOYMENT_NAME) {
+      return NextResponse.json({ error: 'AI configuration is missing' }, { status: 500 });
     }
 
     const validCategoriesText = VALID_CATEGORIES.join(', ');
 
     const payloadObj = {
-      model: AZURE_DEPLOYMENT_NAME,
+      model: AI_DEPLOYMENT_NAME,
       input: [
         {
           role: 'user',
@@ -65,11 +69,11 @@ Return ONLY a valid JSON object with these exact keys.`
       ]
     };
 
-    const response = await fetch(AZURE_OPENAI_ENDPOINT, {
+    const response = await fetch(AI_ENDPOINT, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'api-key': AZURE_OPENAI_KEY
+        'api-key': AI_API_KEY
       },
       body: JSON.stringify(payloadObj)
     });
@@ -80,12 +84,12 @@ Return ONLY a valid JSON object with these exact keys.`
 
     if (!response.ok) {
       const errorData = await response.text();
-      console.error('Azure OpenAI Error:', errorData);
+      console.error('AI Error:', errorData);
       return NextResponse.json({ error: 'Failed to extract data from image' }, { status: response.status });
     }
 
     const result = await response.json();
-    
+
     // Support both Chat Completions (choices) and Responses API (output)
     let extractedText = '{}';
     if (result?.choices?.[0]?.message?.content) {
@@ -100,12 +104,12 @@ Return ONLY a valid JSON object with these exact keys.`
     }
 
     const jsonString = extractedText.replace(/```json/gi, '').replace(/```/g, '').trim();
-    
+
     let parsedData: ExtractedReceiptData;
     try {
       parsedData = JSON.parse(jsonString);
     } catch {
-       return NextResponse.json({ error: 'Failed to parse AI response', rawText: extractedText }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to parse AI response', rawText: extractedText }, { status: 500 });
     }
 
     // Run Rule Engine

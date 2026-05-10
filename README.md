@@ -10,8 +10,8 @@ The system is built with **Next.js 15+ (App Router)** for its seamless integrati
 graph TD
     User((User/Reviewer)) -->|Upload/Review| WebApp[Next.js Frontend]
     WebApp -->|API Request| API[Next.js API Routes]
-    API -->|Prompt + Image| AzureAI[Azure OpenAI GPT-4o]
-    AzureAI -->|JSON Extraction| API
+    API -->|Prompt + Image| AI[AI Service (OpenAI GPT-4o)]
+    AI -->|JSON Extraction| API
     API -->|Validation| RuleEngine[Rule Engine]
     RuleEngine -->|Decision| DB[(PostgreSQL + Prisma)]
     API -->|Persist| DB
@@ -22,7 +22,7 @@ graph TD
 - **Framework**: Next.js 15 (React 19)
 - **Language**: TypeScript
 - **Database**: PostgreSQL with Prisma ORM
-- **AI**: Azure OpenAI (GPT-4o/o1 models) for Vision-based OCR & Extraction
+- **AI**: AI Service (GPT-4o/o1 models) for Vision-based OCR & Extraction
 - **Security**: JWT (jose) with HTTP-only Cookies & bcryptjs for password hashing
 - **Styling**: Vanilla CSS + Tailwind CSS 4 for a premium, high-fidelity UI
 
@@ -31,10 +31,10 @@ graph TD
 ## 🚀 Key Features & Implementation Details
 
 ### 1. Intelligent Data Extraction
-The system utilizes Azure OpenAI's vision capabilities to extract structured data from receipt images. 
+The system utilizes AI vision capabilities to extract structured data from receipt images. 
 - **Prompt Engineering**: The prompt is designed to return a strict JSON schema including `merchant_name`, `receipt_date` (ISO 8601), `total_amount`, and `category`.
 - **Category Matching**: The AI is instructed to map extracted data into one of the 15 valid Contoso categories.
-- **Robustness**: The API handles both Chat Completions and the newer Responses API formats, ensuring compatibility with different Azure deployments.
+- **Robustness**: The API handles both Chat Completions and the newer Responses API formats, ensuring compatibility with different AI model deployments.
 
 #### Extraction Example
 When an image is processed, the AI returns a structured response like this:
@@ -65,7 +65,7 @@ Recognizing that AI is not infallible, the system allows Reviewers to:
 ### 4. Security & Compliance
 - **Server-Side Execution**: All AI API calls and database interactions happen in Next.js Server Components or API Routes.
 - **Authentication**: Role-based access control (RBAC) ensures Employees can only see their own receipts, while Reviewers can see the entire organization's queue.
-- **Environment Safety**: Sensitive credentials (Azure Keys, Database URLs) are managed via environment variables.
+- **Environment Safety**: Sensitive credentials (AI Keys, Database URLs) are managed via environment variables.
 
 ### 5. Auditability & Traceability (Event-Based Architecture)
 The system uses a decoupled, event-sourced pattern to track the lifecycle of every ticket:
@@ -88,7 +88,7 @@ I prioritized a **Premium User Experience** to ensure high adoption rates:
 ## ⚖️ Trade-offs & Limitations
 
 - **Rate Limiting**: The system is tuned for the provided 10,000 TPM limit. I implemented error handling to catch 429 responses and notify the user to retry. However, in a production environment, I would implement a proper logging mechanism for rate limiting events.
-- **Storage**: For this demo, images are stored as Base64 strings in the PostgreSQL database. For a production-scale system, I would move these to a Blob Storage solution (like Azure Blob Storage) and store only the URL.
+- **Storage**: For this demo, images are stored as Base64 strings in the PostgreSQL database. For a production-scale system, I would move these to a Blob Storage solution and store only the URL.
 - **Duplicate Detection**: The current implementation does not check for duplicate receipt uploads (e.g., the same physical ticket uploaded multiple times). For the purpose of this demo, this validation was omitted to focus on the extraction and rule engine logic.
 - **Hardcoded Users**: For this demo, the users are hardcoded in the database seed. In production, I would implement a user management system.
 - **No Error Retry**: The system does not implement a retry mechanism for failed operations. This is for saving AI tokens, minimizing costs for a demo environment. 
@@ -97,7 +97,7 @@ I prioritized a **Premium User Experience** to ensure high adoption rates:
 
 ## 🛠️ Getting Started
 
-1.  **Environment Setup**: Copy `.env.example` to `.env` and fill in your Azure OpenAI credentials and Database URL.
+1.  **Environment Setup**: Copy `.env.example` to `.env` and fill in your AI credentials and Database URL.
 2.  **Install Dependencies**:
     ```bash
     npm install

@@ -3,7 +3,11 @@ import type { NextRequest } from 'next/server';
 import { prisma } from '../../../../lib/prisma';
 import { jwtVerify } from 'jose';
 
-const getSecret = () => new TextEncoder().encode(process.env.JWT_SECRET || 'super-secret-key-for-demo');
+const getSecret = () => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) throw new Error('JWT_SECRET environment variable is missing');
+  return new TextEncoder().encode(secret);
+};
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const token = request.cookies.get('auth_token')?.value;

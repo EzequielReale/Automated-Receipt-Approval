@@ -10,7 +10,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   if (token) {
     try {
-      const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'super-secret-key-for-demo');
+      const jwtSecret = process.env.JWT_SECRET;
+      if (!jwtSecret) throw new Error('JWT_SECRET environment variable is missing');
+      const secret = new TextEncoder().encode(jwtSecret);
       const { payload } = await jwtVerify(token, secret);
       role = payload.role as string;
       email = payload.email as string;

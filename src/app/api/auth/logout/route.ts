@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 
 export async function POST(request: NextRequest) {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || request.nextUrl.origin;
+  const baseUrl = process.env.BASE_URL || request.nextUrl.origin;
   
   const response = NextResponse.redirect(new URL('/', baseUrl));
   
