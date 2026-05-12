@@ -8,12 +8,12 @@ The system is built with **Next.js 15+ (App Router)** for its seamless integrati
 
 ```mermaid
 graph TD
-    User((User/Reviewer)) -->|Upload/Review| WebApp[Next.js Frontend]
+    User((Usuario/Reviewer)) -->|Upload/Review| WebApp[Next.js Frontend]
     WebApp -->|API Request| API[Next.js API Routes]
-    API -->|Prompt + Image| AI[AI Service (OpenAI GPT-4o)]
+    API -->|Prompt + Image| AI["AI Service (GPT-4o)"]
     AI -->|JSON Extraction| API
     API -->|Validation| RuleEngine[Rule Engine]
-    RuleEngine -->|Decision| DB[(PostgreSQL + Prisma)]
+    RuleEngine -->|Decision| DB[("PostgreSQL (Prisma)")]
     API -->|Persist| DB
     WebApp -->|Query Status| DB
 ```
