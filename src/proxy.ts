@@ -12,20 +12,23 @@ const getSecret = () => {
 
 const JWT_SECRET = getSecret();
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const token = request.cookies.get('auth_token')?.value;
   const { pathname } = request.nextUrl;
 
   // Protect dashboard and secure APIs
-  const isProtectedRoute = pathname.startsWith('/dashboard') || pathname.startsWith('/api/extract') || pathname.startsWith('/api/tickets');
+  const isProtectedRoute = pathname.startsWith('/dashboard') || 
+                           pathname.startsWith('/api/extract') || 
+                           pathname.startsWith('/api/tickets') ||
+                           pathname.startsWith('/api/users');
   const isLoginRoute = pathname === '/login';
 
   // If already authenticated and trying to access login page
   if (token && isLoginRoute) {
     try {
       const { payload } = await jwtVerify(token, JWT_SECRET);
-      const role = payload.role as string;
-      return NextResponse.redirect(new URL(`/dashboard/${role.toLowerCase()}`, request.url));
+      const role = (payload.role as string).toLowerCase();
+      return NextResponse.redirect(new URL(`/dashboard/${role}`, request.url));
     } catch {
       // Invalid token, ignore and let them access login
     }
@@ -49,13 +52,22 @@ export async function middleware(request: NextRequest) {
       if (pathname.startsWith('/api/extract') && role !== 'EMPLOYEE') {
         return NextResponse.json({ error: 'Forbidden: Employees only' }, { status: 403 });
       }
+      if (pathname.startsWith('/api/users') && role !== 'ADMIN') {
+        return NextResponse.json({ error: 'Forbidden: Admins only' }, { status: 403 });
+      }
 
       // View Restrictions
       if (pathname.startsWith('/dashboard/employee') && role !== 'EMPLOYEE') {
-        return NextResponse.redirect(new URL('/dashboard/reviewer', request.url));
+        const dest = role === 'ADMIN' ? 'admin' : 'reviewer';
+        return NextResponse.redirect(new URL(`/dashboard/${dest}`, request.url));
       }
       if (pathname.startsWith('/dashboard/reviewer') && role !== 'REVIEWER') {
-        return NextResponse.redirect(new URL('/dashboard/employee', request.url));
+        const dest = role === 'ADMIN' ? 'admin' : 'employee';
+        return NextResponse.redirect(new URL(`/dashboard/${dest}`, request.url));
+      }
+      if (pathname.startsWith('/dashboard/admin') && role !== 'ADMIN') {
+        const dest = role === 'EMPLOYEE' ? 'employee' : 'reviewer';
+        return NextResponse.redirect(new URL(`/dashboard/${dest}`, request.url));
       }
       
       // Base dashboard redirect
@@ -74,5 +86,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/api/extract/:path*', '/api/tickets/:path*', '/login'],
+  matcher: ['/dashboard/:path*', '/api/extract/:path*', '/api/tickets/:path*', '/api/users/:path*', '/login'],
 };

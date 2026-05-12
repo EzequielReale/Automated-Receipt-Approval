@@ -24,7 +24,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     const reviewerId = payload.sub as string;
-    
+
     // Verify user exists in DB to prevent foreign key violations
     const userExists = await prisma.user.findUnique({ where: { id: reviewerId } });
     if (!userExists) {
@@ -33,7 +33,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     const { id: ticketId } = await params;
     const body = await request.json();
-    
+
     // Get existing ticket to merge data for evaluation if only partial data is sent
     const existingTicket = await prisma.ticket.findUnique({ where: { id: ticketId } });
     if (!existingTicket) {
@@ -50,7 +50,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     // Re-run Rule Engine on the backend
     const evaluation = evaluateReceipt(updatedData);
-    
+
     await prisma.ticket.update({
       where: { id: ticketId },
       data: {

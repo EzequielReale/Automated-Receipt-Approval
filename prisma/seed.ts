@@ -9,6 +9,7 @@ async function main() {
   // Hash the passwords
   const employeePassword = await bcrypt.hash('password123', 10);
   const reviewerPassword = await bcrypt.hash('password123', 10);
+  const adminPassword = await bcrypt.hash('password123', 10);
 
   // Create Employee
   const employee = await prisma.user.upsert({
@@ -38,9 +39,24 @@ async function main() {
     },
   });
 
+  // Create Admin
+  const admin = await prisma.user.upsert({
+    where: { email: 'admin@demo.com' },
+    update: {
+      password_hash: adminPassword,
+      role: Role.ADMIN,
+    },
+    create: {
+      email: 'admin@demo.com',
+      password_hash: adminPassword,
+      role: Role.ADMIN,
+    },
+  });
+
   console.log('Users seeded successfully:');
   console.log(`- Employee: ${employee.email} / password123`);
   console.log(`- Reviewer: ${reviewer.email} / password123`);
+  console.log(`- Admin: ${admin.email} / password123`);
 }
 
 main()

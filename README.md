@@ -88,9 +88,10 @@ I prioritized a **Premium User Experience** to ensure high adoption rates:
 ## ⚖️ Trade-offs & Limitations
 
 - **Rate Limiting**: The system is tuned for the provided 10,000 TPM limit. I implemented error handling to catch 429 responses and notify the user to retry. However, in a production environment, I would implement a proper logging mechanism for rate limiting events.
+- **Stateless Session Management**: This demo uses stateless JWTs stored in cookies for simplicity. A known limitation is that if an administrator changes a user's role or deletes a user, the existing session (JWT) remains valid with the old permissions until it expires. 
+    - *Production Solution*: In a production-grade system, I would implement a server-side session store (e.g., **Redis**) to track active sessions. This would allow for instantaneous revocation of sessions or forced re-validation of roles against the database on every request without performance penalties.
 - **Storage**: For this demo, images are stored as Base64 strings in the PostgreSQL database. For a production-scale system, I would move these to a Blob Storage solution and store only the URL.
 - **Duplicate Detection**: The current implementation does not check for duplicate receipt uploads (e.g., the same physical ticket uploaded multiple times). For the purpose of this demo, this validation was omitted to focus on the extraction and rule engine logic.
-- **Hardcoded Users**: For this demo, the users are hardcoded in the database seed. In production, I would implement a user management system.
 - **No Error Retry**: The system does not implement a retry mechanism for failed operations. This is for saving AI tokens, minimizing costs for a demo environment. 
 
 ---

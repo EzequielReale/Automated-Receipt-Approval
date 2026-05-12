@@ -16,7 +16,7 @@ export interface RuleEvaluationResult {
   reason: string;
 }
 
-export type UserRole = 'EMPLOYEE' | 'REVIEWER';
+export type UserRole = 'EMPLOYEE' | 'REVIEWER' | 'ADMIN';
 
 export interface User {
   id: string;

@@ -28,24 +28,26 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <div className="flex items-center gap-4">
           <h1 className="text-xl font-bold text-gray-800">ARA System</h1>
           <span className="text-gray-400">|</span>
-          <span className="font-medium text-gray-600">{role === 'EMPLOYEE' ? 'Employee Portal' : 'Reviewer Portal'}</span>
+          <span className="font-medium text-gray-600">
+            {role === 'ADMIN' ? 'Admin Control' : role === 'EMPLOYEE' ? 'Employee Portal' : 'Reviewer Portal'}
+          </span>
         </div>
         <div className="flex gap-6 items-center">
           <span className="text-sm text-gray-500">
             {email}
           </span>
-          <span className={`text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wide ${
-            role === 'EMPLOYEE' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
-          }`}>
+          <span className={`text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wide ${role === 'ADMIN' ? 'bg-red-100 text-red-800' :
+              role === 'EMPLOYEE' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
+            }`}>
             {role}
           </span>
           <form action={logout}>
             <button className="flex items-center gap-2 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors font-semibold group">
               <span>Logout</span>
-              <svg 
-                className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" 
-                fill="none" 
-                stroke="currentColor" 
+              <svg
+                className="w-4 h-4 transform group-hover:translate-x-1 transition-transform"
+                fill="none"
+                stroke="currentColor"
                 viewBox="0 0 24 24"
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

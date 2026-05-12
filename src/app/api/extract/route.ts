@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     try {
       const { payload } = await jwtVerify(token, getSecret());
       userId = payload.sub as string;
-      
+
       // Verify user exists in DB to prevent foreign key violations (e.g. after DB reset)
       const userExists = await prisma.user.findUnique({ where: { id: userId } });
       if (!userExists) {
