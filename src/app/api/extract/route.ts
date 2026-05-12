@@ -75,20 +75,28 @@ Return ONLY a valid JSON object with these exact keys.`
       ]
     };
 
-    const response = await fetch(AI_ENDPOINT, {
+    const fetchOptions = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'api-key': AI_API_KEY
       },
       body: JSON.stringify(payloadObj)
-    });
+    };
 
+    let response = await fetch(AI_ENDPOINT, fetchOptions);
+
+    // Simple Retry Mechanism for 429 (Rate Limit)
     if (response.status === 429) {
-      return NextResponse.json({ error: 'Rate limit exceeded (10,000 TPM limit). Please try again later.' }, { status: 429 });
+      console.log('Rate limit hit, retrying in 60 seconds...');
+      await new Promise(resolve => setTimeout(resolve, 60000));
+      response = await fetch(AI_ENDPOINT, fetchOptions);
     }
 
     if (!response.ok) {
+      if (response.status === 429) {
+        return NextResponse.json({ error: 'Rate limit exceeded even after retry. Please try again later.' }, { status: 429 });
+      }
       const errorData = await response.text();
       console.error('AI Error:', errorData);
       return NextResponse.json({ error: 'Failed to extract data from image' }, { status: response.status });
