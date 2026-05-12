@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { ExtractedReceiptData } from '../../../lib/types';
 import { VALID_CATEGORIES } from '../../../lib/constants';
 import { prisma } from '../../../lib/prisma';
-import { evaluateReceipt } from '../../../lib/ruleEngine';
+import { evaluateReceipt } from '../../../lib/server/ruleEngine';
 import { jwtVerify } from 'jose';
 
 const getSecret = () => {

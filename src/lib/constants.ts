@@ -1,6 +1,4 @@
-import { ReceiptCategory } from './types';
-
-export const VALID_CATEGORIES: ReceiptCategory[] = [
+export const VALID_CATEGORIES = [
   'Office Supplies',
   'Software & Subscriptions',
   'Cloud & Infrastructure',
@@ -15,4 +13,6 @@ export const VALID_CATEGORIES: ReceiptCategory[] = [
   'Marketing & Advertising',
   'Telecommunications Internet & Phone',
   'Team Events & Employee Engagement',
-];
+] as const;
+
+export type ReceiptCategory = typeof VALID_CATEGORIES[number];

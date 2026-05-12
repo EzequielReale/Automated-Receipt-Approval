@@ -1,5 +1,4 @@
 import React from 'react';
-import { Icons } from './Icons';
 
 interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;

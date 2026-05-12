@@ -28,7 +28,10 @@ export default function ReviewerDashboard() {
   }, []);
 
   useEffect(() => {
-    fetchTickets();
+    const load = async () => {
+      await fetchTickets();
+    };
+    load();
   }, [fetchTickets]);
 
   const handleReviewSubmit = async (finalData: ExtractedReceiptData, finalStatus: ReceiptStatus, comment: string) => {

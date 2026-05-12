@@ -29,7 +29,10 @@ export default function EmployeeDashboard() {
   };
 
   useEffect(() => {
-    fetchTickets();
+    const load = async () => {
+      await fetchTickets();
+    };
+    load();
   }, []);
 
   const handleImageSelected = async (base64: string) => {
@@ -145,9 +148,9 @@ function TicketCard({ ticket }: { ticket: Ticket }) {
           <span className="text-lg text-gray-400 font-normal mr-1">$</span>
           {ticket.data.total_amount}
         </div>
-        {ticket.comment && (
+        {(ticket.comment || (status === 'Rejected' && ticket.evaluation.reason)) && (
           <div className="mt-4 p-3 bg-gray-50 rounded-xl text-xs text-gray-600 italic border-l-4 border-gray-300">
-            &quot;{ticket.comment}&quot;
+            &quot;{ticket.comment || ticket.evaluation.reason}&quot;
           </div>
         )}
       </div>

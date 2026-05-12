@@ -1,5 +1,5 @@
-import { ExtractedReceiptData, RuleEvaluationResult, ReceiptStatus } from './types';
-import { VALID_CATEGORIES } from './constants';
+import { ExtractedReceiptData, RuleEvaluationResult } from '../types';
+import { VALID_CATEGORIES } from '../constants';
 
 type RuleFunction = (data: ExtractedReceiptData) => RuleEvaluationResult | null;
 
