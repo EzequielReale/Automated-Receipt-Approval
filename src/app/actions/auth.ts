@@ -3,7 +3,7 @@
 import { jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { User, UserRole } from '../lib/types';
+import { User, UserRole } from '../../lib/types';
 
 export async function logout() {
   const cookieStore = await cookies();
