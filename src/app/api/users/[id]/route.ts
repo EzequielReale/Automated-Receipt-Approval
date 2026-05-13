@@ -41,6 +41,11 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       data.password_hash = await bcrypt.hash(password, 10);
     }
 
+    // Prevent self-role-change
+    if (id === payload.sub && role && role !== payload.role) {
+      return NextResponse.json({ error: 'Cannot change your own role' }, { status: 400 });
+    }
+
     const updatedUser = await prisma.user.update({
       where: { id },
       data,

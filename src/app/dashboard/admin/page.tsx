@@ -7,6 +7,7 @@ import { Card } from '../../../components/ui/Card';
 import { Icons } from '../../../components/ui/Icons';
 import { Badge } from '../../../components/ui/Badge';
 import { Select } from '../../../components/ui/Select';
+import { getCurrentUser } from '../../actions/auth';
 
 export default function AdminDashboard() {
   const [users, setUsers] = useState<User[]>([]);
@@ -14,6 +15,7 @@ export default function AdminDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [formData, setFormData] = useState({ email: '', password: '', role: 'EMPLOYEE' as UserRole });
 
   const fetchUsers = useCallback(async () => {
@@ -31,6 +33,8 @@ export default function AdminDashboard() {
   useEffect(() => {
     const load = async () => {
       await fetchUsers();
+      const me = await getCurrentUser();
+      setCurrentUser(me);
     };
     load();
   }, [fetchUsers]);
@@ -206,7 +210,13 @@ export default function AdminDashboard() {
                   { value: 'ADMIN', label: 'Administrator' },
                 ]}
                 className="font-bold"
+                disabled={editingUser?.id === currentUser?.id}
               />
+              {editingUser?.id === currentUser?.id && (
+                <p className="text-xs text-amber-600 font-medium">
+                  You cannot change your own role to prevent losing admin access.
+                </p>
+              )}
 
               <div className="flex gap-4 pt-4">
                 <Button 

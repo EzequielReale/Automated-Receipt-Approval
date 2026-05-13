@@ -256,8 +256,8 @@ function TicketRow({ ticket, onSelect, onConfirmAI }: { ticket: Ticket, onSelect
             )}
           </div>
         ) : (
-          <span className="inline-flex items-center gap-1.5 text-[10px] font-black text-yellow-600 bg-yellow-50 px-2.5 py-1 rounded-full border border-yellow-100 uppercase">
-            <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse"></span>
+          <span className="inline-flex items-center gap-1.5 text-[10px] font-black text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-100 uppercase">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
             Pending
           </span>
         )}

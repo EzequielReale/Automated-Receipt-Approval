@@ -31,7 +31,13 @@ export default function ReviewerForm({
   onCancel 
 }: ReviewerFormProps) {
   const [formData, setFormData] = useState<ExtractedReceiptData>(initialData);
-  const [status, setStatus] = useState<ReceiptStatus | ''>(initialStatus || '');
+  const [status, setStatus] = useState<ReceiptStatus | ''>(() => {
+    if (initialStatus) return initialStatus;
+    if (evaluation.status === 'Approved' || evaluation.status === 'Rejected') {
+      return evaluation.status;
+    }
+    return '';
+  });
   const [comment, setComment] = useState<string>(initialComment || '');
   const [error, setError] = useState<string | null>(null);
 
